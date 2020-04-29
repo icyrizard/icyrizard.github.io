@@ -4,15 +4,4 @@ title: About
 permalink: /about/
 ---
 
-This is the base Jekyll theme. You can find out more info about customizing your Jekyll theme, as well as basic Jekyll usage documentation at [jekyllrb.com](https://jekyllrb.com/)
-
-You can find the source code for Minima at GitHub:
-[jekyll][jekyll-organization] /
-[minima](https://github.com/jekyll/minima)
-
-You can find the source code for Jekyll at GitHub:
-[jekyll][jekyll-organization] /
-[jekyll](https://github.com/jekyll/jekyll)
-
-
-[jekyll-organization]: https://github.com/jekyll
+My name is Richard Torenvliet. I've studied Computer Science BSc on the UvA (Univesiteit van Amsterdam) and finished my MSc on the VU (Vrij Universiteit van Amsterdam). Through the years I've worked both on personal projects and projects for work and decided that some of them deserve some 'writing down'. Both for everyone to learn from and for me to see if I (still) understand some of them.
