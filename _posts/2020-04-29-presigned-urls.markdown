@@ -167,7 +167,7 @@ less secure considering this.
 <Error><Code>InvalidArgument</Code>
 <Message>Only one auth mechanism allowed; only the X-Amz-Algorithm query parameter, Signature query string parameter or the Authorization header should be specified</Message>
 <ArgumentName>Authorization</ArgumentName>
-    <ArgumentValue>Bearer accesskey=derp</ArgumentValue><RequestId>8C2D11A845A6DCC6
+    <ArgumentValue>Bearer accesskey=derp</ArgumentValue><RequestId>
 </RequestId>
     <HostId>...</HostId>
 </Error>
