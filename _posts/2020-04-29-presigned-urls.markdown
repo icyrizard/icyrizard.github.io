@@ -18,9 +18,9 @@ S3 bucket. Now, there is no way on earth someone could guess the names of these 
 we store an insane amount of images, our human brain cannot comprehend the size of the search space in which an attacker
 has to go through to be very very lucky...
 
-Now, that said, a fair remark that came my why on this is was,
+Now, that said, a fair remark I got on this was:
 
-> *"What if the paths to the s3 bucket objects were leaked? Somehow?".* 
+> *"But uhh, what if the paths to the s3 bucket objects were leaked? Somehow?".* 
 
 I won't get into the details of this, but this is a valid remark because evil forces with the right access pass, will no doubly
 be able to pull something off like this. So, in short, we need to block public access to our bucket. This can be done
