@@ -158,9 +158,10 @@ This problem is discussed in the following Section.
 The `Authorization Header` is not usable now. You cannot use the Authorization Header to authenticate the user on your platform
 AND send a redirect to AWS. Strangely enough, the Authorization Header is not stripped after a redirect. That's something
 I never realized. To prevent this, a Cookie Authorization must be used and sent by the Client when requesting access
-to an S3 Object. Cookies are automatically stripped or included based on the domain that is receiving them. This sinply does not hold for
-the Authorization Header. Weird huh? The Authorization Header is the modern version of the Cookie Header, yet it is 
-less secure considering this.
+to an S3 Object. Cookies are automatically stripped or included based on the domain that is receiving them. This simply does not hold for
+the Authorization Header. Weird huh? The Authorization Header is the modern version of the Cookie Header, yet it is less secure considering this.
+
+The following Error is given when trying to send the Authorization Header (unknowingly...).
 
 ~~~xml
 <?xml version="1.0" encoding="UTF-8"?>
