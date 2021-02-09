@@ -30,21 +30,24 @@ by either using Signed or Presigned URLS.
 [comment]: <> (_ https://advancedweb.hu/how-to-solve-cors-problems-when-redirecting-to-s3-signed-urls/)
 
 ## What are Signed URLS?
-For the Signed URLs mechanism, the backend application will generate URLS that are signed. The link generated will
-point towards a CloudFront Distribution that is able to verify the signing hidden in the requests parameters.
+For the Signed URLs mechanism, the backend application will generate URLS that are signed, using a private key for which Cloudfront
+has the public key. The link generated will
+point towards a CloudFront Distribution that is able to verify the signing hidden in the requests parameters. The benefit
+is that you can use Cloudfront and take use of its caching mechanisms as well as protect the resources it has to. It does require root access to the AWS Account,
+so depending on your situation, this may be more difficult.
 
 > More will come 
 
 ## What are Pre-signed URLS?
-AWS Presigned URLS allow for temporarily grant specific rights to someone with the link. This being, to **read**, **write** or **delete**
+AWS Pre-signed URLS allow for temporarily grant specific rights to someone with the link. This being, to **read**, **write** or **delete**
 objects in S3. From a server side perspective, this could simply mean that we generate the Presigned URL on the server and that link to 
 the client. The client can use the URLs to perform the desired operation, depending on the access right granted by the server.
 
-A prerequisites is that the server needs to have access (by means of a IAM Role and Policy) to the location to the 
+A prerequisites is that the AWS Service needs to have access to the location to the 
 Bucket and Path for which it is generating a Presigned URL. You can either use an AWS Key and AWS Secret, 
-but it's far more secure to use the Role that is attached to the service of backend entity in AWS. To use it,
-you should use the [Aws\Credentials\CredentialsInterface](https://docs.aws.amazon.com/sdk-for-php/v3/developer-guide/guide_configuration.html), 
-and use the credentials so setup the`S3Client`. An example of this is shown in Listings 1.
+but it's far more secure and scalable solution to use an Iam Role that is attached to the AWS service of your backend entity in AWS.
+To use it, you should use pass [Aws\CacheInterface](https://docs.aws.amazon.com/sdk-for-php/v3/developer-guide/guide_configuration.html), 
+as the credentials so setup the`S3Client`. An example of this is shown in Listings 1.
 
 This will prevent long reuse of an AWS Key and Secret, this reduces the risk of those keys being leaked in any way and be active forever without knowing. 
 Role based access will give you full power in what is allowed by that specific role. Another benefit is that is a less expensive operation.
@@ -75,7 +78,7 @@ The AWS Key and Secret it has retrieved from the
 
 ### Getting an S3 Object with a Presigned URL
 Following the Example on the [AWS Documentation on PresignedURLs](https://docs.aws.amazon.com/AmazonS3/latest/dev/RetrieveObjSingleOpPHP.html),
-and combining this the `Aws\Credentials\CredentialsInterface`, we get the following
+and combining this the `Aws\CacheInterface`, we get the following
 result for retrieving an object using the presigned URL. Note that this not the result we are aiming for yet... we don't want to
 download the object in the Backend, we want to give the sweet task of the downloading the object to the client.
 
@@ -95,32 +98,25 @@ class CacheObject implements Aws\CacheInterface {
 
 ... 
 
-$bucket = 'derp-bucket';
-$keyname = 'uploads/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.jpg';
+$keyName = 'uploads/aaaaaaaaaaaaaaaaaaaaa.jpg';
 
 $credentials = new CacheObject();
 
-$s3 = new Aws\S3\S3Client([
+$s3Client = new Aws\S3\S3Client([
   'version'     => 'latest',
   'region'      => 'eu-west-1',
   'credentials' => $credentials
 ]);
 
-try {
-  // Get the object.
-  $result = $s3->getObject([
-      'Bucket' => $bucket,
-      'Key'  => $keyname
-  ]);
+$cmd = $s3Client->getCommand('GetObject', [
+    'Bucket' => 'derp-bucket',
+    'Key' => $keyName,
+]);
 
-  // Display the object in the browser.
-  header("Content-Type: {$result['ContentType']}");
+$request = $s3Client->createPresignedRequest($cmd, '+2 minutes');
 
-  echo $result['Body'];
-} catch (S3Exception $e) {
-    echo $e->getMessage() . PHP_EOL;
-}
 ~~~
+> Listings 1: Shows an Example of how to get an S3 Object from S3 using a Pre-singed Request.
 
 This is nice, but we don't want the actual file, we want the client to fetch it instead. We just need the URL and send
 an HTTP Redirect so the client can follow that link instead.
@@ -133,15 +129,15 @@ to generate the Presigned URL by the following snippet:
 $lifetime = 60;
 
 $cmd = $s3->getCommand('GetObject', [
-    'Bucket' => $bucket
+    'Bucket' => 'derp-bucket',
     'Key' => $keyName,
 ]);
 
 $presignedUrlRequest = $this->S3->createPresignedRequest($cmd, DateUtils::time() + $lifetime);
 $presignedUrl = (string)$presignedUrlRequest->getUri(); 
 
-return $presignedUrl;
 ~~~
+> Listings 2: Shows an Example of how to get the Pre-signed Url from S3.
 
 An important part was to cast the result of the getUri function to a String. It returns an object that contains
 a toString method. Not converting it will give you hours of fun debugging, you're welcome :).
@@ -156,10 +152,11 @@ This problem is discussed in the following Section.
 
 #### The Authorization Header Problem
 The `Authorization Header` is not usable now. You cannot use the Authorization Header to authenticate the user on your platform
-AND send a redirect to AWS. Strangely enough, the Authorization Header is not stripped after a redirect. That's something
-I never realized. To prevent this, a Cookie Authorization must be used and sent by the Client when requesting access
-to an S3 Object. Cookies are automatically stripped or included based on the domain that is receiving them. This simply does not hold for
-the Authorization Header. Weird huh? The Authorization Header is the modern version of the Cookie Header, yet it is less secure considering this.
+AND send a redirect to AWS. Strangely enough, the Authorization Header is not stripped after a redirect, see [[1]](#references). That's something I never realized. 
+And who would until they find out the hard way right?
+
+Anyway, to prevent this, we go back to our old school Cookie Authorization. So instead of the Authorization Header that contains the acces key, they must use send 
+a Cookie to Authorize themselves on our server to get access to S3 Object. A well known fact about Cookies is that they are automatically stripped if the domain changes. 
 
 The following Error is given when trying to send the Authorization Header (unknowingly...).
 
@@ -168,19 +165,31 @@ The following Error is given when trying to send the Authorization Header (unkno
 <Error><Code>InvalidArgument</Code>
 <Message>Only one auth mechanism allowed; only the X-Amz-Algorithm query parameter, Signature query string parameter or the Authorization header should be specified</Message>
 <ArgumentName>Authorization</ArgumentName>
-    <ArgumentValue>Bearer accesskey=derp</ArgumentValue><RequestId>
+    <ArgumentValue>Bearer Token</ArgumentValue><RequestId>
 </RequestId>
     <HostId>...</HostId>
 </Error>
 ~~~
+> Listings 3: Shows the error message received upon the HTTP Redirect where the Authorization Header was not stripped from the request.
 
 In the Presigned URL the X-Amz-Algorithm contains
 
 #### Fix the CORS problem
+> Will come
+
+# Conclusion
+In these notes I've aimed to give an example of how Pre-signed Urls work and how they can be used in an production environment.
+I've copied and put together some AWS Documentation to make small example of how Pre-signed Urls could
+work for an application. We've seen an example of how to set up the S3 Client efficiently using the Cache Object, an example
+that I haven't really seen on the AWS Documentation.
+
+We've seen the problem that occur when using an HTTP Redirect Request, that it does not strip out the Authorization 
+Header after Redirection. In my opinion HTTP Client should really strip those out to prevent any dangerous leakage
+of Access Keys. The Authorization Header is the modern version of the Cookie Header, yet it is less secure considering this.
 
 ### References
-1. [How to Remove Authorization Header 302](https://stackoverflow.com/questions/35400943/how-to-remove-authorization-header-in-a-http-302-response)
-
+#### 1. "How to remove authorization header in a http 302 response - Stack ...."
+   [https://stackoverflow.com/questions/35400943/how-to-remove-authorization-header-in-a-http-302-response/45217599. Accessed 9 Feb. 2021.](https://stackoverflow.com/questions/35400943/how-to-remove-authorization-header-in-a-http-302-response/45217599. Accessed 9 Feb. 2021.)
 
 [comment]: <> (// TODO: info on how a service in AWS gets a AWS Key and Secret granted by the platform during runtime)
 
