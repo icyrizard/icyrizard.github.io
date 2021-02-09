@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Notes on AWS S3 Presigned URLs"
+title:  "Notes on setting up AWS S3 Pre-signed URLs"
 date:   2021-02-08 21:48:16 +0200
 categories: aws presigned-urls s3
 ---
