@@ -1,8 +1,8 @@
 ---
 layout: post
 title:  "Notes on setting up AWS S3 Pre-signed URLs"
-date:   2021-02-08 21:48:16 +0200
-categories: aws presigned-urls s3
+date:   2021-01-29 20:48:16 +0200
+categories: aws presigned-urls s3 devops
 ---
 
 Recently I've been working on a project to further upgrade the security for the company that I work for.
