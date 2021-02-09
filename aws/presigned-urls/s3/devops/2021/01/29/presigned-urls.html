@@ -1,10 +1,10 @@
 <!DOCTYPE html><html lang="en">
   <head><meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"><title>Notes on setting up AWS S3 Pre-signed URLs - Your Site Title</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"><title>Notes on setting up AWS S3 Pre-signed URLs - CodeDerps</title>
 
 <meta name="description" content="Recently I’ve been working on a project to further upgrade the security for the company that I work for.This blog post will cover some of my learnings during...">
-<link rel="canonical" href="/aws/presigned-urls/s3/devops/2021/01/29/presigned-urls.html"><link rel="alternate" type="application/rss+xml" title="Your Site Title" href="/feed.xml"><!-- start favicons snippet, use https://realfavicongenerator.net/ --><link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png"><link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png"><link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png"><link rel="manifest" href="/assets/site.webmanifest"><link rel="mask-icon" href="/assets/safari-pinned-tab.svg" color="#fc4d50"><link rel="shortcut icon" href="/assets/favicon.ico">
+<link rel="canonical" href="/aws/presigned-urls/s3/devops/2021/01/29/presigned-urls.html"><link rel="alternate" type="application/rss+xml" title="CodeDerps" href="/feed.xml"><!-- start favicons snippet, use https://realfavicongenerator.net/ --><link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png"><link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png"><link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png"><link rel="manifest" href="/assets/site.webmanifest"><link rel="mask-icon" href="/assets/safari-pinned-tab.svg" color="#fc4d50"><link rel="shortcut icon" href="/assets/favicon.ico">
 
 <meta name="msapplication-TileColor" content="#ffc40d"><meta name="msapplication-config" content="/assets/browserconfig.xml">
 
@@ -266,8 +266,8 @@
 <path class="st0" d="M1.7,22.3c5.7-5.7,11.3-5.7,17,0c3.3-3.3,3.5-5.3,0.8-6c2.7,0.7,3.5-1.1,2.3-5.6s-3.3-5.2-6.3-2.1
 	c3-3,2.3-5.2-2.1-6.3S7,1.8,7.7,4.6C7,1.8,5,2.1,1.7,5.3C7.3,11,7.3,16.7,1.7,22.3"/>
 </svg>
-<a title="Your Site Description
-" href="/">Your Site Title</a></div><button class="button button--secondary button--circle search-button js-search-toggle"><i class="fas fa-search"></i></button></div><nav class="navigation">
+<a title="A collection guides and thoughts about programming, about things I've personally encountered through the years, years of study and working experience.
+" href="/">CodeDerps</a></div><button class="button button--secondary button--circle search-button js-search-toggle"><i class="fas fa-search"></i></button></div><nav class="navigation">
         <ul><li class="navigation__item"><a href="/archive.html">Archive</a></li><li class="navigation__item"><a href="/about.html">About</a></li><li><button class="button button--secondary button--circle search-button js-search-toggle"><i class="fas fa-search"></i></button></li></ul>
       </nav></div>
   </header>
@@ -282,9 +282,9 @@
 <article itemscope itemtype="http://schema.org/Article"><div class="article__header"><header><h1>Notes on setting up AWS S3 Pre-signed URLs</h1></header><span class="split-space">&nbsp;</span>
           <a class="edit-on-github"
             title="Edit on Github"
-            href="https://github.com/user_name/repo_name/tree/master/_posts/2021-01-29-presigned-urls.markdown">
+            href="https://github.com/icyrizard/icyrizard.github.io/tree/master/_posts/2021-01-29-presigned-urls.markdown">
             <i class="far fa-edit"></i></a></div><meta itemprop="headline" content="Notes on setting up AWS S3 Pre-signed URLs"><div class="article__info clearfix"><ul class="right-col menu"><li><i class="far fa-calendar-alt"></i> <span>Jan 29, 2021</span>
-            </li></ul></div><meta itemprop="author" content="Your Name"/><meta itemprop="datePublished" content="2021-01-29T19:48:16+01:00"><div class="js-article-content"><div class="layout--article"><!-- start custom article top snippet -->
+            </li></ul></div><meta itemprop="author" content="Richard Torenvliet"/><meta itemprop="datePublished" content="2021-01-29T19:48:16+01:00"><div class="js-article-content"><div class="layout--article"><!-- start custom article top snippet -->
 
 <!-- end custom article top snippet -->
 <div class="article__content" itemprop="articleBody"><p>Recently I’ve been working on a project to further upgrade the security for the company that I work for.
@@ -529,12 +529,15 @@ of Access Keys. The Authorization Header is the modern version of the Cookie Hea
             </div></div></div><div class="page__footer d-print-none">
 <footer class="footer py-4 js-page-footer">
   <div class="main"><div itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Your Name"><meta itemprop="url" content="/"><meta itemprop="description" content="I am an amazing person."><div class="footer__author-links"><div class="author-links">
-  <ul class="menu menu--nowrap menu--inline"></ul>
+      <meta itemprop="name" content="Richard Torenvliet"><meta itemprop="url" content="/"><meta itemprop="description" content="MSc Graduated Software Developer and love to talk about code, salsa dancing and photography."><div class="footer__author-links"><div class="author-links">
+  <ul class="menu menu--nowrap menu--inline"><li title="Send me an Email.">
+      <a class="button button--circle mail-button" itemprop="email" href="mailto:richard@torenvliet.org" target="_blank">
+        <i class="fas fa-envelope"></i>
+      </a></ul>
 </div>
 </div>
     </div><div class="site-info mt-2">
-      <div>© Your Site Title 2021,
+      <div>© CodeDerps 2021,
         Powered by <a title="Jekyll is a simple, blog-aware, static site generator." href="http://jekyllrb.com/">Jekyll</a> & <a
         title="TeXt is a super customizable Jekyll theme." href="https://github.com/kitian616/jekyll-TeXt-theme">TeXt Theme</a>.
       </div>
