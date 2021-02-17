@@ -461,22 +461,40 @@ a Cookie to Authorize themselves on our server to get access to S3 Object. A wel
   <p>Listings 3: Shows the error message received upon the HTTP Redirect where the Authorization Header was not stripped from the request.</p>
 </blockquote>
 
-<p>In the Presigned URL the X-Amz-Algorithm contains</p>
+<p>In the Pre-signed URL the X-Amz-Algorithm contains</p>
 
 <h4 id="fix-the-cors-problem">Fix the CORS problem</h4>
+<p>Needless to say, this problem needs solving I will state this for the sake of completeness, but for this problem no particular
+weirdness happened for me. Lucky me. A small note, for our purpose only the GET method is needed, and restricting the origin is 
+impossible and unnecessary. Impossible because our users should be able to use their own scripts to download images.</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span>
+<span class="nt">&lt;CORSConfiguration</span> <span class="na">xmlns=</span><span class="s">"http://s3.amazonaws.com/doc/2006-03-01/"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;CORSRule&gt;</span>
+        <span class="nt">&lt;AllowedOrigin&gt;</span>*<span class="nt">&lt;/AllowedOrigin&gt;</span>
+        <span class="nt">&lt;AllowedMethod&gt;</span>GET<span class="nt">&lt;/AllowedMethod&gt;</span>
+        <span class="nt">&lt;MaxAgeSeconds&gt;</span>3000<span class="nt">&lt;/MaxAgeSeconds&gt;</span>
+        <span class="nt">&lt;AllowedHeader&gt;</span>*<span class="nt">&lt;/AllowedHeader&gt;</span>
+    <span class="nt">&lt;/CORSRule&gt;</span>
+<span class="nt">&lt;/CORSConfiguration&gt;</span>
+</code></pre></div></div>
 <blockquote>
-  <p>Will come</p>
+  <p>Listings 4: THe CORS Headers needed for on our S3 Bucket. Enter this XML into the ‘Permissions’ tab -&gt; CORS Section of the S3 Bucket.</p>
 </blockquote>
 
+<p>When you use do restrict the S3 bucket to certain domains, it can aid to a higher level of security. When your requirement is to allow access from anywhere to the
+S3 bucket, this becomes impossible. That said, the Signed URL version of this using Cloudfront does give you the opportunity to strictly allow
+access from that Cloudfront origin.</p>
+
 <h1 id="conclusion">Conclusion</h1>
-<p>In these notes I’ve aimed to give an example of how Pre-signed Urls work and how they can be used in an production environment.
+<p>In these notes I’ve aimed to give an example of how Pre-signed Urls work and how they can be used in a production environment.
 I’ve copied and put together some AWS Documentation to make small example of how Pre-signed Urls could
 work for an application. We’ve seen an example of how to set up the S3 Client efficiently using the Cache Object, an example
 that I haven’t really seen on the AWS Documentation.</p>
 
 <p>We’ve seen the problem that occur when using an HTTP Redirect Request, that it does not strip out the Authorization 
 Header after Redirection. In my opinion HTTP Client should really strip those out to prevent any dangerous leakage
-of Access Keys. The Authorization Header is the modern version of the Cookie Header, yet it is less secure considering this.</p>
+of Access Keys. The Authorization Header is the modern version of the Cookie Header, and yet it is less secure considering this.</p>
 
 <h3 id="references">References</h3>
 <h4 id="1-how-to-remove-authorization-header-in-a-http-302-response---stack-">1. “How to remove authorization header in a http 302 response - Stack ….”</h4>
