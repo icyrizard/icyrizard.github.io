@@ -347,9 +347,10 @@ and we do not need the access to the AWS root account to create a key pair, so f
 </ol>
 
 <p>The benefits of this method is that the links that are responded by our API can remain the same forever. Only upon downloading / accessing 
-that url with the right access credentials, the generation of the Pre-signed URL starts immediately. The HTTP Client automatically is redirected to the right URL.
-This means that it is hard for an attacker to find the actual links to images because it must operate within the browser or network,
-and record the HTTP <code class="language-plaintext highlighter-rouge">Location Header</code> response of our server to the client. That is what how a the <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Redirections">HTTP Redirect</a> 
+that url with the right access credentials, the generation of the Pre-signed URL starts. The HTTP Client automatically is redirected to the right URL.</p>
+
+<p>For an attacker it became a lot harder to find the actual links to images because that would mean to intercept network traffic
+and capture the HTTP <code class="language-plaintext highlighter-rouge">Location Header</code> response of our server to the client. That is what how a the <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Redirections">HTTP Redirect</a> 
 mechanism actually works.</p>
 
 <h3 id="aws-s3-client-initialization">AWS S3 Client Initialization</h3>
