@@ -3,7 +3,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"><title>Notes on setting up AWS S3 Pre-signed URLs - CodeDerps</title>
 
-<meta name="description" content="Recently I’ve been working on a project to further upgrade the security for the company that I work for.This blog post will cover some of my learnings during...">
+<meta name="description" content="A while I’ve been working on a project to further upgrade the security for the company that I work for. I still remember some struggles I’ve endured during t...">
 <link rel="canonical" href="/aws/presigned-urls/s3/devops/2021/01/29/presigned-urls.html"><link rel="alternate" type="application/rss+xml" title="CodeDerps" href="/feed.xml"><!-- start favicons snippet, use https://realfavicongenerator.net/ --><link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png"><link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png"><link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png"><link rel="manifest" href="/assets/site.webmanifest"><link rel="mask-icon" href="/assets/safari-pinned-tab.svg" color="#fc4d50"><link rel="shortcut icon" href="/assets/favicon.ico">
 
 <meta name="msapplication-TileColor" content="#ffc40d"><meta name="msapplication-config" content="/assets/browserconfig.xml">
@@ -287,33 +287,34 @@
             </li></ul></div><meta itemprop="author" content="Richard Torenvliet"/><meta itemprop="datePublished" content="2021-01-29T19:48:16+01:00"><div class="js-article-content"><div class="layout--article"><!-- start custom article top snippet -->
 
 <!-- end custom article top snippet -->
-<div class="article__content" itemprop="articleBody"><p>Recently I’ve been working on a project to further upgrade the security for the company that I work for.
-This blog post will cover some of my learnings during this project. The examples will be in PHP, while I do have my 
-opinion about PHP, it’s the safest way for me to guarantee that my examples work :).</p>
+<div class="article__content" itemprop="articleBody"><p>A while I’ve been working on a project to further upgrade the security for the company that I work for. I still 
+remember some struggles I’ve endured during the project, both by design and implementation.</p>
+
+<p>This blog post will cover some of my learnings during this project. The examples will be in PHP, while I do have my 
+opinion about PHP, but it’s the safest way for me to guarantee that my examples work :).</p>
 
 <h2 id="a-little-background-story">A Little Background Story</h2>
-<p>Users directly upload pictures to our platform, during the upload process they are resized into two types of sizes, a thumbnail
-size and a preview size. This yields 3 images that are stored on S3, each with saved with a long string of random characters into an
-S3 bucket. Now, there is no way on earth someone could guess the names of these images, even given the fact that
+<p>Users directly upload pictures to our Backend Application, during the upload process they are resized into two types of sizes. A thumbnail
+size and a preview size. This yields 3 images that will need storing in S3, each will be get a long string of random characters as its new
+name in S3 bucket. This should alreayd be fairly secure, there is no way on earth someone could guess the names of these images. Even given the fact that
 we store an insane amount of images, our human brain cannot comprehend the size of the search space in which an attacker
 has to go through to be very very lucky…</p>
 
-<p>Now, that said, a fair remark I got on this was:</p>
+<p>That said, a fair remark I got was:</p>
 
 <blockquote>
-  <p><em>“But uhh, what if the paths to the s3 bucket objects were leaked? Somehow?”.</em></p>
+  <p><em>“But uhh, what if the paths to the s3 bucket objects were leaked? Won’t they be downloadable forever?”.</em></p>
 </blockquote>
 
-<p>I won’t get into the details of this, but this is a valid remark because evil forces with the right access pass, will no doubly
-be able to pull something off like this. So, in short, we need to block public access to our bucket. This can be done
-by either using Signed or Presigned URLS.</p>
+<p>This is a truly valid remark, evil forces with the right access pass, will undoubtedly be able to pull something off like this.
+So, in short, we need to block public access to our bucket. This can be done by either using Signed or Presigned URLS.</p>
 
 <h2 id="what-are-signed-urls">What are Signed URLS?</h2>
 <p>For the Signed URLs mechanism, the backend application will generate URLS that are signed, using a private key for which Cloudfront
 has the public key. The link generated will
 point towards a CloudFront Distribution that is able to verify the signing hidden in the requests parameters. The benefit
 is that you can use Cloudfront and take use of its caching mechanisms as well as protect the resources it has to. It does require root access to the AWS Account,
-so depending on your situation, this may be more difficult.</p>
+so depending on your situation, this may be more difficult to implement.</p>
 
 <blockquote>
   <p>More will come</p>
@@ -325,7 +326,7 @@ S3 Objects. From a server side perspective, this could simply mean that we gener
 the client. The client can use the URLs to perform the desired operation, depending on the access right granted by the server.</p>
 
 <p>A prerequisites is that the AWS Service needs to have access to the location to the 
-Bucket and Path for which it is generating a Presigned URL. You can either use an AWS Key and AWS Secret, 
+Bucket and Path for which it is generating a Pre-signed URL. You can either use an AWS Key and AWS Secret, 
 but it’s far more secure and scalable solution to use an Iam Role that is attached to the AWS service of your backend entity in AWS.
 To use it, you should use pass <a href="https://docs.aws.amazon.com/sdk-for-php/v3/developer-guide/guide_configuration.html">Aws\CacheInterface</a>, 
 as the credentials so setup the<code class="language-plaintext highlighter-rouge">S3Client</code>. An example of this is shown in Listings 1.</p>
@@ -344,6 +345,12 @@ and we do not need the access to the AWS root account to create a key pair, so f
   <li>The attachments have links directly leading to our Backend.</li>
   <li>We check if they have a valid login and if they are allowed to see the current requested resource using their access key.</li>
 </ol>
+
+<p>The benefits of this method is that the links that are responded by our API can remain the same forever. Only upon downloading / accessing 
+that url with the right access credentials, the generation of the Pre-signed URL starts immediately. The HTTP Client automatically is redirected to the right URL.
+This means that it is hard for an attacker to find the actual links to images because it must operate within the browser or network,
+and record the HTTP <code class="language-plaintext highlighter-rouge">Location Header</code> response of our server to the client. That is what how a the <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Redirections">HTTP Redirect</a> 
+mechanism actually works.</p>
 
 <h3 id="aws-s3-client-initialization">AWS S3 Client Initialization</h3>
 <p>This documentation is a bit misleading on what you should supply as the credentials option for the S3Client:</p>
@@ -437,6 +444,14 @@ a toString method. Not converting it will give you hours of fun debugging, you�
 <p>Now that we have the URL we can send a 303 to with the location header set to the Presigned URL. The HTTP Client of
 the user will automatically follow the redirect and start downloading the S3 Object. Now at this moment a problem arose.
 This problem is discussed in the following Section.</p>
+
+<h2 id="how-long-should-the-pre-signed-url-lifetime-be">How long should the Pre-signed URL Lifetime be?</h2>
+<p>Talking from own experience (I could definitely be wrong about this), the lifetime of the Pre-signed URL must be around 60 seconds at least.
+Any lower will occasionally trigger <code class="language-plaintext highlighter-rouge">Expired</code> errors by S3. This could either be due differences in clocks, or the time difference between getting a fresh new Pre-signed URL and when
+the download actually starts can be a cause of an Expired response from S3.</p>
+
+<p>Remind that we’re trying to block the fact that S3 Objects are downloadable forever if you have the link,
+a hacker that has obtained the Pre-signed URL somehow can download the Object within the same second of finding it.</p>
 
 <h4 id="the-authorization-header-problem">The Authorization Header Problem</h4>
 <p>The <code class="language-plaintext highlighter-rouge">Authorization Header</code> is not usable now. You cannot use the Authorization Header to authenticate the user on your platform
