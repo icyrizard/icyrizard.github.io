@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.2.0">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2021-02-17T23:01:53+01:00</updated><id>/feed.xml</id><title type="html">CodeDerps</title><subtitle>A collection guides and thoughts about programming, about things I've personally encountered through the years, years of study and working experience.
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.2.0">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2021-02-17T23:02:41+01:00</updated><id>/feed.xml</id><title type="html">CodeDerps</title><subtitle>A collection guides and thoughts about programming, about things I've personally encountered through the years, years of study and working experience.
 </subtitle><author><name>Richard Torenvliet</name><email>richard@torenvliet.org</email></author><entry><title type="html">Notes on setting up AWS S3 Pre-signed URLs</title><link href="/aws/presigned-urls/s3/devops/2021/01/29/presigned-urls.html" rel="alternate" type="text/html" title="Notes on setting up AWS S3 Pre-signed URLs" /><published>2021-01-29T19:48:16+01:00</published><updated>2021-01-29T19:48:16+01:00</updated><id>/aws/presigned-urls/s3/devops/2021/01/29/presigned-urls</id><content type="html" xml:base="/aws/presigned-urls/s3/devops/2021/01/29/presigned-urls.html">&lt;p&gt;A while I’ve been working on a project to further upgrade the security for the company that I work for. I still 
 remember some struggles I’ve endured during the project, both by design and implementation.&lt;/p&gt;
 
@@ -68,7 +68,7 @@ mechanism actually works.&lt;/p&gt;
 &lt;h3 id=&quot;aws-s3-client-initialization&quot;&gt;AWS S3 Client Initialization&lt;/h3&gt;
 &lt;p&gt;This documentation is a bit misleading on what you should supply as the credentials option for the S3Client:&lt;/p&gt;
 
-&lt;p&gt;&lt;strong&gt;Copied from the AWS Docs on AWS S3 Client Credentials initialisation:&lt;/strong&gt;&lt;/p&gt;
+&lt;h5 id=&quot;copied-from-the-aws-docs-on-aws-s3-client-credentials-initialisation&quot;&gt;&lt;strong&gt;Copied from the AWS Docs on AWS S3 Client Credentials initialisation:&lt;/strong&gt;&lt;/h5&gt;
 &lt;blockquote&gt;
   &lt;p&gt;If you don’t provide a credentials option, the SDK attempts to load credentials from your environment in the following order:&lt;/p&gt;
   &lt;ol&gt;
