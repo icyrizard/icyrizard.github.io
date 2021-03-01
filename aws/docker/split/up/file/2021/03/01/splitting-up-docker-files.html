@@ -428,8 +428,8 @@ Later I’ll show how this used further.</p>
 </ol>
 
 <h3 id="not-there-yet-we-need-it-in-production">Not there yet, we need it in Production!</h3>
-<p>Remember that the <a href="#the-problem-with-huge-dockerfiles">problem</a>, we need to make this work on our CI-tool where we can’t use a cache.
-By making separate images, tagging them nicely with a version AND upload them to a private registry, only then are starting
+<p>Recall the actual  <a href="#the-problem-with-huge-dockerfiles">problem</a> again as stated above. We need to make this work on our CI-tool where we can’t use of a cache.
+By making separate images, tagging them nicely (with a version) AND upload them to a private registry, only then are starting
 to speed up the process. For this, we can use another that feature that Docker provides: <code class="language-plaintext highlighter-rouge">Build Arguments</code>. They are arguments
 that you can pass to <code class="language-plaintext highlighter-rouge">docker build</code> which replaces variables in our Dockerfile.</p>
 
