@@ -300,11 +300,16 @@ cover the problem in the next Section.</p>
 <p>For those that are not aware of how Dockerfiles work, each statement in a Dockerfile creates a new layer. This new layer
 can be seen as one step of the build stage, each layer will add either complexity and will add more time to the build time.
 The actual time a new layer adds to the total build time Dockerfile of course depends on the statement itself, but they all
-take time, and it’s hard to predict in advance which one takes longer.</p>
+take time, and it’s hard to predict in advance which one of them takes longer than the other.</p>
 
-<p>So, if each layer will add complexity to the grant total of the build, given enough layers, the build time will grow with it.
+<p>So, if each layer will add complexity to the grant total of the build, given enough layers, the build time will grow unmanageably long.
 Also, the unnecessary work that needs to be done each time a build is run feels painful. The build gets slow, we wasted the energy, and it’s not even environment friendly come
 to think of it…</p>
+
+<blockquote>
+  <p>Note that I’m not going to cover the build size in this post, which is an important aspect of fast deployments, but the method
+discussed in this post will take care of this too (indirectly).</p>
+</blockquote>
 
 <p>The funny thing is that you won’t notice this slowdown when developing locally. When building a Docker Image on your machine, 
 Docker will remember the incremental layers on the disk such that it won’t run a layer
