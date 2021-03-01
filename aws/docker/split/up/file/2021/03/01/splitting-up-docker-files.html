@@ -337,17 +337,18 @@ Dockerfile.</p>
 </code></pre></div></div>
 
 <h3 id="lets-split-it-up-using-multi-stage-builds">Let’s split it up! Using Multi-Stage Builds</h3>
-<p>To do this, we use Dockers’ <a href="https://docs.docker.com/develop/develop-images/multistage-build/">Multi-Stage builds</a>
-It allows you to create multiple stages that can be used and copied from separately, using <code class="language-plaintext highlighter-rouge">FROM &lt;some_image:verwsion&gt; as &lt;Some Name&gt;</code> statements.
-Everything after such a statement until the next one is called stage and can be targeted. Remember the notion of targeting, as it gets more 
+<p>To split up the Dockerfile, we use Dockers’ <a href="https://docs.docker.com/develop/develop-images/multistage-build/">Multi-Stage builds</a>
+It allows you to create multiple stages that can be used and copied from separately, using <code class="language-plaintext highlighter-rouge">FROM &lt;some_image:verwsion&gt; as &lt;Some Name&gt;</code> statements.</p>
+
+<p>Everything after such a statement until the next one is called stage and can be targeted. Remember the notion of targeting, as it gets more 
 interesting after this example.</p>
 
-<h4 id="we-need-some-rules-to-split-it-up">We need some Rules to split it up.</h4>
+<h3 id="we-need-some-rules-to-make-it-easier">We need some Rules to make it easier</h3>
 <p>I’ve used two simple rules to make splitting a bit easier. They are not perfect, but they give a direction for optimization.</p>
 
 <ul>
-  <li><strong>Rule 1:</strong> The <code class="language-plaintext highlighter-rouge">apt-gets</code> are runtime dependencies, they are needed on a machine level.</li>
-  <li><strong>Rule 2:</strong> Statements like <code class="language-plaintext highlighter-rouge">pip install -r requirements.txt</code> are Third Party dependencies that operate more on an application level.</li>
+  <li><strong>Rule 1:</strong> Define your Rutime dependencies. Like <code class="language-plaintext highlighter-rouge">apt-gets</code> are runtime dependencies, they are needed on a machine level.</li>
+  <li><strong>Rule 2:</strong> Define your 3rdparty dependencies. Statements like <code class="language-plaintext highlighter-rouge">pip install -r requirements.txt</code> are 3Party dependencies that normally more on an application level.</li>
 </ul>
 
 <div class="language-Dockerfile highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># [1] Rename the Dockerfile this to our 'base' image.</span>
