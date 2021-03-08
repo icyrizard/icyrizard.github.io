@@ -1,10 +1,10 @@
 <!DOCTYPE html><html lang="en">
   <head><meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"><title>How to split up Docker files (For Faster Deploys) - CodeDerps</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"><title>Debugging a 'Transition Aborted' in Ember - CodeDerps</title>
 
-<meta name="description" content="It’s now a been a view years back that I’ve come across Docker, and I’ve almost in all my projects ever since. For a long while I was working on small projec...">
-<link rel="canonical" href="/aws/docker/split/up/file/2021/03/01/splitting-up-docker-files.html"><link rel="alternate" type="application/rss+xml" title="CodeDerps" href="/feed.xml"><!-- start favicons snippet, use https://realfavicongenerator.net/ --><link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png"><link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png"><link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png"><link rel="manifest" href="/assets/site.webmanifest"><link rel="mask-icon" href="/assets/safari-pinned-tab.svg" color="#fc4d50"><link rel="shortcut icon" href="/assets/favicon.ico">
+<meta name="description" content="I was having a problem the other day when Ember start aborting a Transition after clicking on a link.Imagine a component that can trigger a redirection to so...">
+<link rel="canonical" href="/emberjs/route/router.js/transitioning/query-params/nested/routes/2021/03/08/debugging-ember-route-params-problem.html"><link rel="alternate" type="application/rss+xml" title="CodeDerps" href="/feed.xml"><!-- start favicons snippet, use https://realfavicongenerator.net/ --><link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png"><link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png"><link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png"><link rel="manifest" href="/assets/site.webmanifest"><link rel="mask-icon" href="/assets/safari-pinned-tab.svg" color="#fc4d50"><link rel="shortcut icon" href="/assets/favicon.ico">
 
 <meta name="msapplication-TileColor" content="#ffc40d"><meta name="msapplication-config" content="/assets/browserconfig.xml">
 
@@ -279,221 +279,122 @@
               <div class="col-main cell cell--auto"><!-- start custom main top snippet -->
 
 <!-- end custom main top snippet -->
-<article itemscope itemtype="http://schema.org/Article"><div class="article__header"><header><h1>How to split up Docker files (For Faster Deploys)</h1></header><span class="split-space">&nbsp;</span>
+<article itemscope itemtype="http://schema.org/Article"><div class="article__header"><header><h1>Debugging a 'Transition Aborted' in Ember</h1></header><span class="split-space">&nbsp;</span>
           <a class="edit-on-github"
             title="Edit on Github"
-            href="https://github.com/icyrizard/icyrizard.github.io/tree/master/_posts/2021-03-01-splitting-up-docker-files.markdown">
-            <i class="far fa-edit"></i></a></div><meta itemprop="headline" content="How to split up Docker files (For Faster Deploys)"><div class="article__info clearfix"><ul class="right-col menu"><li><i class="far fa-calendar-alt"></i> <span>Mar 01, 2021</span>
-            </li></ul></div><meta itemprop="author" content="Richard Torenvliet"/><meta itemprop="datePublished" content="2021-03-01T07:01:36+01:00"><div class="js-article-content"><div class="layout--article"><!-- start custom article top snippet -->
+            href="https://github.com/icyrizard/icyrizard.github.io/tree/master/_posts/2021-03-01-debugging-ember-route-params-problem.markdown">
+            <i class="far fa-edit"></i></a></div><meta itemprop="headline" content="Debugging a 'Transition Aborted' in Ember"><div class="article__info clearfix"><ul class="right-col menu"><li><i class="far fa-calendar-alt"></i> <span>Mar 08, 2021</span>
+            </li></ul></div><meta itemprop="author" content="Richard Torenvliet"/><meta itemprop="datePublished" content="2021-03-08T07:01:36+01:00"><div class="js-article-content"><div class="layout--article"><!-- start custom article top snippet -->
 
 <!-- end custom article top snippet -->
-<div class="article__content" itemprop="articleBody"><p>It’s now a been a view years back that I’ve come across Docker, and I’ve almost in all my projects ever since. For a 
-long while I was working on small projects, be it either hobby projects, study projects and small paid ones. During all this time
-I actually never got bothered by the amount of statements in my Dockerfile. That was until I started integrating Docker into
-the project of my current job. This project has been actively developed on for 8-9 years before I started moving it to Docker. It wasn’t 
-a small project to say the least.</p>
+<div class="article__content" itemprop="articleBody"><p>I was having a problem the other day when Ember start aborting a Transition after clicking on a link.
+Imagine a component that can trigger a redirection to some resource if it had the <code class="language-plaintext highlighter-rouge">model</code>, or <code class="language-plaintext highlighter-rouge">model.id</code>. For this you can
+either generate a link using the <a href="https://guides.emberjs.com/v3.24.0/routing/linking-between-routes/">link-to</a> helper:</p>
 
-<p>I started naively with one Dockerfile, it soon turned out to contain around 200 lines. This however, I didn’t see as a problem. Let’s
-cover the problem in the next Section.</p>
+<div class="language-handlebars highlighter-rouge"><div class="highlight"><pre class="highlight"><code>     [1] will trigger the model hook with a params object containing the id of the model
+     <span class="k">{{#</span><span class="nn">link-to</span> <span class="s2">"view.resource"</span> <span class="nv">model</span><span class="p">.</span><span class="nv">id</span><span class="k">}}</span>Click to view this resource!<span class="k">{{/</span><span class="nn">link-to</span><span class="k">}}</span>
 
-<h3 id="the-problem-with-huge-dockerfiles">The Problem with Huge Dockerfiles</h3>
-<p>For those that are not aware of how Dockerfiles work, each statement in a Dockerfile creates a new layer. This new layer
-can be seen as one step of the build stage, each layer will add either complexity and will add more time to the build time.
-The actual time a new layer adds to the total build time Dockerfile of course depends on the statement itself, but they all
-take time, and it’s hard to predict in advance which one of them takes longer than the other.</p>
-
-<p>So, if each layer will add complexity to the grant total of the build, given enough layers, the build time will grow unmanageably long.
-Also, the unnecessary work that needs to be done each time a build is run feels painful. The build gets slow, we wasted the energy, and it’s not even environment friendly come
-to think of it…</p>
-
-<blockquote>
-  <p>Note that I’m not going to cover the build size in this post, which is an important aspect of fast deployments, but the method
-discussed in this post will take care of this too (indirectly).</p>
-</blockquote>
-
-<p>The funny thing is that you won’t notice this slowdown when developing locally. When building a Docker Image on your machine, 
-Docker will remember the incremental layers on the disk such that it won’t run a layer
-a second time [2]. However, if you take use a build service like <a href="https://travis-ci.com/">Travis[2]</a>, these layers do not remain anywhere after a build is done. I have tried
-using Travis it’s caching mechanism to cache certain parts of the build, but this was completely not working for me. Somehow
-the cache on Travis was busted each time after running a build. Either way, this solution was just adding too much complexity, even if it were to work.</p>
-
-<blockquote>
-  <p>An interesting read on how this is implemented in Docker can be found here in their Documentation: <a href="https://docs.docker.com/storage/storagedriver/overlayfs-driver/#how-the-overlay2-driver-works">How the Overlay2 Driver Works[3]</a></p>
-</blockquote>
-
-<h3 id="show-me-an-example">Show me an Example!</h3>
-<p>Without further discussing the actual problem, lets workout an example that we can use to split up Builds. Consider the following
-Dockerfile.</p>
-
-<div class="language-Dockerfile highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">FROM</span><span class="s"> python:3.7.5</span>
-
-<span class="k">RUN </span>apt-get update <span class="nt">-y</span> <span class="o">&amp;&amp;</span> apt-get <span class="nb">install</span> <span class="nt">-y</span> a b c ... x y z
-
-<span class="k">COPY</span><span class="s"> requirements.txt /tmp</span>
-<span class="k">RUN </span>pip <span class="nb">install</span> <span class="nt">-r</span> /tmp/requirements.txt
-<span class="k">RUN </span>pip <span class="nb">install</span> <span class="nt">-U</span> pytest
-
-<span class="k">WORKDIR</span><span class="s"> /src</span>
+     [2] will trigger the model hook of the route, because we pass-in th model
+     <span class="k">{{#</span><span class="nn">link-to</span> <span class="s2">"view.resource"</span> <span class="nv">model</span><span class="k">}}</span>Click to view this resource!<span class="k">{{/</span><span class="nn">link-to</span><span class="k">}}</span>
 </code></pre></div></div>
 
-<h3 id="lets-split-it-up-using-multi-stage-builds">Let’s split it up! Using Multi-Stage Builds</h3>
-<p>To split up the Dockerfile, we use Dockers’ <a href="https://docs.docker.com/develop/develop-images/multistage-build/">Multi-Stage builds</a>
-It allows you to create multiple stages that can be used and copied from separately, using <code class="language-plaintext highlighter-rouge">FROM &lt;some_image:verwsion&gt; as &lt;Some Name&gt;</code> statements.</p>
+<p>Another solution is to use <a href="https://guides.emberjs.com/release/routing/redirection/">this.transitionTo()</a> function in a route.
+It allows for programmatically transitioning to other routes. In our code base we have a <code class="language-plaintext highlighter-rouge">transitionTo</code> action defined
+that allows triggering transitions from anywhere to anywhere as long as you can access the route action.</p>
 
-<p>Everything after such a statement until the next one is called stage and can be targeted. Remember the notion of targeting, as it gets more 
-interesting after this example.</p>
+<h2 id="notes-on-ember-nested-route-transitions">Notes on Ember (Nested) Route Transitions</h2>
+<p>When Ember starts to redirect to a different route, it will travers from the toplevel route to the child route. Meaning that if you go to “view.resource”, 
+Ember will first transition to “view”, and then to “resource”. Those routes in the same “stack” of cards if you will, they belong together are only valid
+in that order.</p>
 
-<h3 id="we-need-some-rules-to-make-it-easier">We need some Rules to make it easier</h3>
-<p>I’ve used two simple rules to make splitting a bit easier. They are not perfect, but they give a direction for optimization.</p>
+<p>Now imagine that the level of nested routes consists of one level more. So three layers, (e.g., “view.resource.details”).
+When traversing to the deepest route, any of the other two routes can generate problems and abort the transition for any given reason. Often they are
+aborted due to some failing promise, or in this case it was a bit more complicated.</p>
 
-<ul>
-  <li><strong>Rule 1:</strong> Define your Rutime dependencies. Like <code class="language-plaintext highlighter-rouge">apt-gets</code> are runtime dependencies, they are needed on a machine level.</li>
-  <li><strong>Rule 2:</strong> Define your 3rdparty dependencies. Statements like <code class="language-plaintext highlighter-rouge">pip install -r requirements.txt</code> are 3Party dependencies that normally more on an application level.</li>
-</ul>
+<p>See here the code that was executed without a propper stacktrace in the <a href="https://github.com/tildeio/router.js/tree/f889135a0874a2c5f34e89ce816a8587a232b624"><code class="language-plaintext highlighter-rouge">router.js</code></a> library. 
+This is the library <code class="language-plaintext highlighter-rouge">Ember</code> uses under the hood to transition between routes. It was a bit tricky without external help I must say.</p>
 
-<div class="language-Dockerfile highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># [1] Rename the Dockerfile this to our 'base' image.</span>
-<span class="k">FROM</span><span class="s"> python:3.7.5 as base </span>
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="nx">rollback</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="k">this</span><span class="p">.</span><span class="nx">isAborted</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">log</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">router</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">sequence</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">targetName</span> <span class="o">+</span> <span class="dl">'</span><span class="s1">: transition was aborted</span><span class="dl">'</span><span class="p">);</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nx">DEBUG</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">let</span> <span class="nx">error</span> <span class="o">=</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="s2">`Transition aborted stack`</span><span class="p">);</span>
 
-<span class="k">RUN </span>apt-get update <span class="nt">-y</span> <span class="o">&amp;&amp;</span> apt-get <span class="nb">install</span> <span class="nt">-y</span> something
+        <span class="k">this</span><span class="p">.</span><span class="nx">debugAbortStack</span> <span class="o">=</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="nx">error</span><span class="p">.</span><span class="nx">stack</span><span class="p">;</span>
+      <span class="p">}</span>
 
-<span class="c"># [2]: Create a new image layer here, and use 'base' as the base image.</span>
-<span class="k">FROM</span><span class="s"> base as thirdPartyDeps</span>
+      <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">intent</span> <span class="o">!==</span> <span class="kc">undefined</span> <span class="o">&amp;&amp;</span> <span class="k">this</span><span class="p">.</span><span class="nx">intent</span> <span class="o">!==</span> <span class="kc">null</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">intent</span><span class="p">.</span><span class="nx">preTransitionState</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">router</span><span class="p">.</span><span class="nx">state</span><span class="p">;</span>
+      <span class="p">}</span>
 
-<span class="k">COPY</span><span class="s"> requirements.txt /tmp</span>
-<span class="k">RUN </span>pip <span class="nb">install</span> <span class="nt">-r</span> /tmp/requirements.txt
-
-<span class="c"># [3]: Create an image that is used for testing only.</span>
-<span class="k">FROM</span><span class="s"> thirdPartyDeps as testRunner</span>
-<span class="k">RUN </span>pip <span class="nb">install</span> <span class="nt">-U</span> pytest
-
-<span class="k">FROM</span><span class="s"> thirdPartyDeps as src</span>
-
-<span class="c"># [4] add the src</span>
-<span class="k">ADD</span><span class="s"> src/ /var/www/html/</span>
-
-<span class="k">FROM</span><span class="s"> src as acceptance</span>
-<span class="c">## add more acc deps</span>
-
-<span class="k">FROM</span><span class="s"> src as production</span>
-<span class="c"># Remove some unessary runtime deps.</span>
-<span class="k">RUN </span>apt-get purge <span class="nt">-y</span> a b c 
-<span class="c">## add more or remove maybe.</span>
-
-<span class="k">WORKDIR</span><span class="s"> /src</span>
-</code></pre></div></div>
-
-<blockquote>
-  <p>Note that some runtime dependencies are sometimes only needed because <code class="language-plaintext highlighter-rouge">pip install</code> requires them during installation.
-You can easily remove them in the designated build to reduce the image size.</p>
-</blockquote>
-
-<p>That’s useful, but we still face some problems. Running <code class="language-plaintext highlighter-rouge">docker build</code> without a cache, will go over all the lines in the Dockerfile. 
-So, lets say we want to start building a production image. For this we will use the <code class="language-plaintext highlighter-rouge">--target</code> command as shown in the Docker Documentation <a href="#references">[1]</a>.</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker build --tag production:latest --target production --file Dockerfile .
+      <span class="c1">// IMPORTANT: [1] Remember this line here. This 'isAborted' is a property was changed!</span>
+      <span class="k">this</span><span class="p">.</span><span class="nx">isAborted</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+      <span class="k">this</span><span class="p">.</span><span class="nx">isActive</span> <span class="o">=</span> <span class="kc">false</span><span class="p">;</span>
+      <span class="k">this</span><span class="p">.</span><span class="nx">router</span><span class="p">.</span><span class="nx">activeTransition</span> <span class="o">=</span> <span class="kc">undefined</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}:</span>
 </code></pre></div></div>
 <blockquote>
-  <p>Listings 3. Showing how to build a production target build. All of the layers will get executed if no cache is available.</p>
+  <p>Listings 1: Code find in here in the <code class="language-plaintext highlighter-rouge">router.js</code> library: <a href="https://github.com/tildeio/router.js/blob/f889135a0874a2c5f34e89ce816a8587a232b624/lib/router/transition.ts#L173">transition.ts</a></p>
 </blockquote>
 
-<p>The missing link is to tag the other stages with a version and upload them to a private registry. Having a private 
-registry containing specific tagged images will allow you to ‘fake’ a cache. Meaning that the layers will not be executed
-but will be downloaded. Luckily the network speed is not a bottleneck on our CI-tool :)</p>
+<p>The above <code class="language-plaintext highlighter-rouge">rollback()</code> was triggered, but who triggered it, where? Which route? To answer this question I needed to dive deep in to the rabbit whole.
+But remember the <code class="language-plaintext highlighter-rouge">isAborted</code>, which is important becauce that is flipped to <code class="language-plaintext highlighter-rouge">false</code>, and I need to know why and where.</p>
 
-<h3 id="splitting-up-the-dockerfile-itself">Splitting up the Dockerfile itself</h3>
-<p>Splitting up the Dockerfile into different files allows for better oversight on the problem. Each Dockerfile will be
-a separate tagged image that can be used by a <code class="language-plaintext highlighter-rouge">FROM ..</code> statement. Here, a simplified example of splitting that file up in to 3 Dockerfiles is shown by the following:
-Later I’ll show how this used further.</p>
+<h2 id="steps-to-reproduce-recap">Steps to reproduce (recap)</h2>
 
-<div class="language-Dockerfile highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Dockerfile.base</span>
-<span class="k">FROM</span><span class="s"> python:3.7.5 as base </span>
-
-<span class="c"># =======================</span>
-
-<span class="c"># Dockerfile.runtime-deps</span>
-<span class="k">FROM</span><span class="s"> base as thirdPartyDeps</span>
-<span class="c"># =======================</span>
-
-<span class="c"># Dockerfile</span>
-<span class="k">FROM</span><span class="s"> thirdPartyDeps as testRunner</span>
-<span class="k">FROM</span><span class="s"> thirdPartyDeps as acc</span>
-<span class="k">FROM</span><span class="s"> thirdPartyDeps as prd</span>
-<span class="c"># =======================</span>
-</code></pre></div></div>
+<p>My actions to trigger the problem were:</p>
 
 <ol>
-  <li>Multi-stage builds</li>
-  <li>Split and tag and build Multiple Dockerfiles</li>
-  <li>Build Arguments with our Registry Target.</li>
+  <li>Click on trigger the redirection, wait for it to trigger a redirect using <strong>transitionTo</strong>.</li>
+  <li>Transitions from “<strong>other-view</strong>” Route with QueryParams <code class="language-plaintext highlighter-rouge">?resource_id=987</code> to <strong>view.resource.details</strong> <code class="language-plaintext highlighter-rouge">modelId:123</code></li>
+  <li>Ember <strong>aborts</strong> one of the routes and triggers a <code class="language-plaintext highlighter-rouge">rollback</code> of the transition, without giving a proper reason.</li>
 </ol>
 
-<h3 id="not-there-yet-we-need-it-in-production">Not there yet, we need it in Production!</h3>
-<p>Recall the actual  <a href="#the-problem-with-huge-dockerfiles">problem</a> again as stated above. We need to make this work on our CI-tool where we can’t use of a cache.
-By making separate images, tagging them nicely (with a version) AND upload them to a private registry, only then are starting
-to speed up the process. For this, we can use another that feature that Docker provides: <code class="language-plaintext highlighter-rouge">Build Arguments</code>. They are arguments
-that you can pass to <code class="language-plaintext highlighter-rouge">docker build</code> which replaces variables in our Dockerfile.</p>
+<p>Now I noticed that with query params defined in the start route, it fails, but without them it does not… That started smelling like a cause of the problem.</p>
 
-<div class="language-Dockerfile highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">ARG</span><span class="s"> THIRD_PARTY_DEPS_REGISTRY</span>
-<span class="k">ARG</span><span class="s"> RUNTIME_DEPS_REGISTRY</span>
-
-<span class="c">## Rename the images for convenience</span>
-<span class="k">FROM</span><span class="s"> $THIRD_PARTY_DEPS_REGISTRY as thirdPartyDeps</span>
-<span class="k">FROM</span><span class="s"> $RUNTIME_DEPS_REGISTRY as base</span>
-
-<span class="k">FROM</span><span class="s"> base as baseWithSrcAndThirdPartyDeps</span>
-
-<span class="c">## Copy 3rd party installs to the src</span>
-<span class="k">COPY</span><span class="s"> --from=thirdParty /3rdparty /3rdparty</span>
-<span class="k">ADD</span><span class="s"> src/ /var/www/html</span>
-
-<span class="c"># Dockerfile</span>
-<span class="k">FROM</span><span class="s"> baseWithSrcAndThirdPartyDeps as testRunner</span>
-<span class="k">FROM</span><span class="s"> baseWithSrcAndThirdPartyDeps as acc</span>
-<span class="k">FROM</span><span class="s"> baseWithSrcAndThirdPartyDeps as prd</span>
-</code></pre></div></div>
-
-<blockquote>
-  <p>Note that I left out the Dockerfile examples for the runtime dependencies, and the 3rdparty package installs to keep
-the information more compact.</p>
-</blockquote>
-
-<h3 id="build-the-images">Build the images</h3>
-<p>Set the <code class="language-plaintext highlighter-rouge">Registry</code> endpoint first, so we can use it in our build script.</p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">REGISTRY</span><span class="o">=</span>my-registry-domain.com
-</code></pre></div></div>
+<h2 id="query-params-causing-problems">Query Params causing problems</h2>
+<p>So as stated above, Ember uses <code class="language-plaintext highlighter-rouge">route.js</code> library for its routing. There I can find the code that sets the flag isAborted
+to false on the transition object.</p>
 
 <ol>
-  <li><strong>Create the base image</strong>
-    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker build -t base -t {REGISTERY}:base:v1.0.0 --file Docker.base .
-</code></pre></div>    </div>
+  <li>When transitioning to a nested route (which is simply a child of some route).</li>
+  <li>It starts with the outer parent route and moves into the child. Based on the given parameters to the route it will trigger the model hook or not. If it’s an ID it will trigger the model hook with parameters, if you pass a model, it won’t trigger the model hook. Instead it will call the afterModel and all the things that come after the model hook.</li>
+  <li>One of each transition in the tree of routings can fail, which one can be a bit difficult to find.
+    <ul>
+      <li>3a. It crashed right here: <a href="https://github.com/tildeio/router.js/blob/f889135a0874a2c5f34e89ce816a8587a232b624/lib/router/transition.ts#L173">https://github.com/tildeio/router.js#L173</a></li>
+    </ul>
   </li>
-  <li><strong>Create the runtime dependencies</strong>
-    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker build -t runtime-deps -t {REGISTERY}:runtime_deps:v1.0.0 --file Docker.runtime-deps .
-</code></pre></div>    </div>
-  </li>
-  <li><strong>Create an acceptance build</strong>
-    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker build -t acceptance:$(date +"%Y%m%d%M%S") \
- --build-arg BASE={REGISTERY}:base:v1.0.0 \
- --build-arg RUNTIME_DEPS_REGISTRY={REGISTERY}:runtime-deps:v1.0.0 \
- --target acceptance --file Dockerfile .
-</code></pre></div>    </div>
-  </li>
-  <li><strong>Create a production build</strong>
-    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker build -t production:$(date +"%Y%m%d%M%S") \
- --build-arg BASE={REGISTERY}:base:v1.0.0 \
- --build-arg RUNTIME_DEPS_REGISTRY={REGISTERY}:runtime-deps:v1.0.0 \
- --target production --file Dockerfile .
-</code></pre></div>    </div>
-  </li>
+  <li>The transition was aborted for some reason, the variable <code class="language-plaintext highlighter-rouge">isAborted</code> of one of the Transitions in the stack was flipped to false… Still, no idea why yet.</li>
 </ol>
 
-<h3 id="references">References</h3>
-<h4 id="1-multi-stage-builds">1. <a href="https://docs.docker.com/develop/develop-images/multistage-build/">Multi-Stage builds</a></h4>
-<h4 id="2-travis">2. <a href="https://travis-ci.com/">Travis</a></h4>
-<h4 id="3-how-the-overlay2-driver-works">3. <a href="https://docs.docker.com/storage/storagedriver/overlayfs-driver/#how-the-overlay2-driver-works">How the Overlay2 Driver Works</a></h4>
+<h2 id="solution-watch-isaborted-flip-to-false">Solution, watch ‘isAborted’ flip to False!</h2>
+<p>I’ve used a small snippet to called <a href="https://gist.github.com/eligrey/384583">watch</a>. It triggers when the variable is changed value. As noted before, the <code class="language-plaintext highlighter-rouge">isAborted</code> variable denoted in Listing 1 was set to false.
+You need to add the snippet, just paste into the console. This will change the behaviour of all JS objects. You will need to set a breakpoint before the variable is changed, then call the snippet:</p>
 
-</div><section class="article__sharing d-print-none"></section><div class="d-print-none"><footer class="article__footer"><meta itemprop="dateModified" content="2021-03-01T07:01:36+01:00"><!-- start custom article footer snippet -->
+<p>And watch:</p>
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">this</span><span class="p">.</span><span class="nx">watch</span><span class="p">(</span><span class="err">‘</span><span class="nx">isAborted</span><span class="err">’</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="c1">// trigger debugger</span>
+  <span class="k">debugger</span><span class="p">;</span>
+<span class="p">});</span>
+</code></pre></div></div>
+
+<p>It will hit the debugger when the value changes from true to false, then, see the stack trace and debug. Then I found that the Transition was aborted because of a refresh that was triggered in a route that was not active.
+The reason for it was that the <code class="language-plaintext highlighter-rouge">QueryParameters</code> were changing, and the transitioning was taking place at the same time. Normally that is not a problem, but due to some old lingering code in one of the routes, this caused the problem.</p>
+
+<p>Remember that the <code class="language-plaintext highlighter-rouge">QueryParams</code> were set to: <code class="language-plaintext highlighter-rouge">?resource_id=987</code>, while the transition was being executed from the <strong>“other-view”</strong> route to the <strong>“view.resource.details”</strong>, the first thing that happened was that the query params changed. 
+In Ember you can have a hook on the Rout called <code class="language-plaintext highlighter-rouge">queryParamsDidChange</code>. This was specifically done in a file route name <code class="language-plaintext highlighter-rouge">listRoute</code>, a common used code to show list resources. Within this hook a refresh is automatically triggered if the queryParaams
+change, that’s pretty usefeul! But this is triggered before the route was actually changed, it was actually the first thing that happened. Nothing was loaded yet, no models were set up, ‘the transition was still on the move.’. But this route was no longer active anymore.
+Triggering a refresh on a non-active route, can cause weird problems. Luckily you can test if the current route is <em>active</em> when the refresh is triggered, so finally, the solution. Behold;</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">queryParamsDidChange</span><span class="p">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+<span class="o">--</span> <span class="k">this</span><span class="p">.</span><span class="nx">refresh</span><span class="p">();</span>
+<span class="o">++</span>  <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">router</span><span class="p">.</span><span class="nx">isActive</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">routeName</span><span class="p">))</span> <span class="p">{</span>
+<span class="o">++</span>        <span class="k">this</span><span class="p">.</span><span class="nx">refresh</span><span class="p">();</span>
+<span class="o">++</span> <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+</div><section class="article__sharing d-print-none"></section><div class="d-print-none"><footer class="article__footer"><meta itemprop="dateModified" content="2021-03-08T07:01:36+01:00"><!-- start custom article footer snippet -->
 
 <!-- end custom article footer snippet -->
 <div class="article__subscribe"><div class="subscribe"><i class="fas fa-rss"></i> <a type="application/rss+xml" href="/feed.xml">Subscribe</a></div>
@@ -504,7 +405,7 @@ the information more compact.</p>
       </a>
     </p>
   </div></div></footer>
-<div class="article__section-navigator clearfix"><div class="previous"><span>PREVIOUS</span><a href="/aws/presigned-urls/s3/devops/2021/01/29/presigned-urls.html">Notes on setting up AWS S3 Pre-signed URLs</a></div><div class="next"><span>NEXT</span><a href="/emberjs/route/router.js/transitioning/query-params/nested/routes/2021/03/08/debugging-ember-route-params-problem.html">Debugging a 'Transition Aborted' in Ember</a></div></div></div>
+<div class="article__section-navigator clearfix"><div class="previous"><span>PREVIOUS</span><a href="/aws/docker/split/up/file/2021/03/01/splitting-up-docker-files.html">How to split up Docker files (For Faster Deploys)</a></div></div></div>
 
 </div>
 
