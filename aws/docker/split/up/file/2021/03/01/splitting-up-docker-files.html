@@ -476,7 +476,7 @@ the information more compact.</p>
     <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker build -t acceptance:$(date +"%Y%m%d%M%S") \
  --build-arg BASE={REGISTERY}:base:v1.0.0 \
  --build-arg RUNTIME_DEPS_REGISTRY={REGISTERY}:runtime-deps:v1.0.0 \
- --target production --file Dockerfile .
+ --target acceptance --file Dockerfile .
 </code></pre></div>    </div>
   </li>
   <li><strong>Create a production build</strong>
