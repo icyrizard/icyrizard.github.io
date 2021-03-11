@@ -3,13 +3,13 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"><title>Debugging a 'Transition Aborted' issue in Ember - CodeDerps</title>
 
-<meta name="description" content="I was having a problem the other day when Ember start aborting a Transition after clicking on a link.Imagine a component that can trigger a redirection to so...">
+<meta name="description" content="I was having a problem the other day when Ember start aborting a Transition after clicking on a link. The problem was sohidden in away, the problem could hav...">
 <link rel="canonical" href="/emberjs/route/router.js/transitioning/query-params/nested/routes/2021/03/08/debugging-ember-route-params-problem.html"><link rel="alternate" type="application/rss+xml" title="CodeDerps" href="/feed.xml"><!-- start favicons snippet, use https://realfavicongenerator.net/ --><link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png"><link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png"><link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png"><link rel="manifest" href="/assets/site.webmanifest"><link rel="mask-icon" href="/assets/safari-pinned-tab.svg" color="#fc4d50"><link rel="shortcut icon" href="/assets/favicon.ico">
 
 <meta name="msapplication-TileColor" content="#ffc40d"><meta name="msapplication-config" content="/assets/browserconfig.xml">
 
 <meta name="theme-color" content="#ffffff">
-<!-- end favicons snippet --><link rel="stylesheet" href="/assets/css/main.css"><link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/5.15.1/css/all.css" ><!-- start custom head snippets -->
+<!-- end favicons snippet --><link rel="stylesheet" href="/assets/css/main.css"><link rel="stylesheet" href="" ><!-- start custom head snippets -->
 
 <!-- end custom head snippets -->
 <script>(function() {
@@ -227,7 +227,7 @@
     var TEXT_VARIABLES = {
       version: '2.2.6',
       sources: {
-        font_awesome: 'https://cdn.bootcdn.net/ajax/libs/font-awesome/5.15.1/css/all.css',
+        font_awesome: '',
         jquery: 'https://cdn.bootcss.com/jquery/3.1.1/jquery.min.js',
         leancloud_js_sdk: '//cdn.jsdelivr.net/npm/leancloud-storage@3.13.2/dist/av-min.js',
         chart: 'https://cdn.bootcss.com/Chart.js/2.7.2/Chart.bundle.min.js',
@@ -287,8 +287,30 @@
             </li></ul></div><meta itemprop="author" content="Richard Torenvliet"/><meta itemprop="datePublished" content="2021-03-08T07:01:36+01:00"><div class="js-article-content"><div class="layout--article"><!-- start custom article top snippet -->
 
 <!-- end custom article top snippet -->
-<div class="article__content" itemprop="articleBody"><p>I was having a problem the other day when Ember start aborting a Transition after clicking on a link.
-Imagine a component that can trigger a redirection to some resource if it had the <code class="language-plaintext highlighter-rouge">model</code>, or <code class="language-plaintext highlighter-rouge">model.id</code>. For this you can
+<div class="article__content" itemprop="articleBody"><p>I was having a problem the other day when Ember start aborting a Transition after clicking on a link. The problem was so
+hidden in away, the problem could have arised from anywhere. I just needed to find the exact moment that it failed.</p>
+
+<p>The solution presented here to find the actual problem can be used for any project that renders some nasty error messages
+in hidden layers of your code. Being hidden away in your dependencies or in your own code.</p>
+
+<h3 id="tldr">TL;DR</h3>
+<p>I’ve used a small snippet to called <a href="https://gist.github.com/eligrey/384583">watch</a>. It triggers when the variable is changed value. You need to add the snippet by pasting into the console.
+This will change the behaviour (add the watch function) for all JS objects in the current session. You will need to set a breakpoint before the variable is changed, then call the snippet:</p>
+
+<p>Use watch by opening the console while you have the break point open.</p>
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">this</span><span class="p">.</span><span class="nx">watch</span><span class="p">(</span><span class="err">‘</span><span class="nx">PropertyNameOfTheObject</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="c1">// trigger debugger</span>
+  <span class="k">debugger</span><span class="p">;</span>
+<span class="p">});</span>
+</code></pre></div></div>
+<blockquote>
+  <p>Listings 2: This is how you use watch to track the ‘isAborted’ property on the Transition Object.</p>
+</blockquote>
+
+<p>It will hit the debugger when the value changes from true to false, then, see the stack trace and debug.</p>
+
+<h3 id="imagine-the-following-">Imagine the following …</h3>
+<p>Imagine a component that can trigger a redirection to some resource if it had the <code class="language-plaintext highlighter-rouge">model</code>, or <code class="language-plaintext highlighter-rouge">model.id</code>. For this you can
 either generate a link using the <a href="https://guides.emberjs.com/v3.24.0/routing/linking-between-routes/">link-to</a> helper:</p>
 
 <div class="language-handlebars highlighter-rouge"><div class="highlight"><pre class="highlight"><code>     [1] will trigger the model hook with a params object containing the id of the model
@@ -302,7 +324,7 @@ either generate a link using the <a href="https://guides.emberjs.com/v3.24.0/rou
 It allows for programmatically transitioning to other routes. In our code base we have a <code class="language-plaintext highlighter-rouge">transitionTo</code> action defined
 that allows triggering transitions from anywhere to anywhere as long as you can access the route action.</p>
 
-<h2 id="notes-on-ember-nested-route-transitions">Notes on Ember (Nested) Route Transitions</h2>
+<h3 id="notes-on-ember-nested-route-transitions">Notes on Ember (Nested) Route Transitions</h3>
 <p>When Ember starts to redirect to a different route, it will travers from the toplevel route to the child route. Meaning that if you go to “view.resource”, 
 Ember will first transition to “view”, and then to “resource”. Those routes in the same “stack” of cards if you will, they belong together are only valid
 in that order.</p>
@@ -341,7 +363,7 @@ This is the library <code class="language-plaintext highlighter-rouge">Ember</co
 <p>The above <code class="language-plaintext highlighter-rouge">rollback()</code> was triggered, but who triggered it, where? Which route? To answer this question I needed to dive deep in to the rabbit whole.
 But remember the <code class="language-plaintext highlighter-rouge">isAborted</code>, which is important becauce that is flipped to <code class="language-plaintext highlighter-rouge">false</code>, and I need to know why and where.</p>
 
-<h2 id="steps-to-reproduce-recap">Steps to reproduce (recap)</h2>
+<h3 id="steps-to-reproduce-recap">Steps to reproduce (recap)</h3>
 
 <p>My actions to trigger the problem were:</p>
 
@@ -353,7 +375,7 @@ But remember the <code class="language-plaintext highlighter-rouge">isAborted</c
 
 <p>Now I noticed that with query params defined in the start route, it fails, but without them it does not… That started smelling like a cause of the problem.</p>
 
-<h2 id="query-params-causing-problems">Query Params causing problems</h2>
+<h3 id="query-params-causing-problems">Query Params causing problems</h3>
 <p>So as stated above, Ember uses <code class="language-plaintext highlighter-rouge">route.js</code> library for its routing. There I can find the code that sets the flag isAborted
 to false on the transition object.</p>
 
@@ -368,16 +390,19 @@ to false on the transition object.</p>
   <li>The transition was aborted for some reason, the variable <code class="language-plaintext highlighter-rouge">isAborted</code> of one of the Transitions in the stack was flipped to false… Still, no idea why yet.</li>
 </ol>
 
-<h2 id="solution-watch-isaborted-flip-to-false">Solution, watch ‘isAborted’ flip to False!</h2>
+<h3 id="solution-watch-isaborted-flip-to-false">Solution, watch ‘isAborted’ flip to False!</h3>
 <p>I’ve used a small snippet to called <a href="https://gist.github.com/eligrey/384583">watch</a>. It triggers when the variable is changed value. As noted before, the <code class="language-plaintext highlighter-rouge">isAborted</code> variable denoted in Listing 1 was set to false.
 You need to add the snippet, just paste into the console. This will change the behaviour of all JS objects. You will need to set a breakpoint before the variable is changed, then call the snippet:</p>
 
-<p>And watch:</p>
+<p>Use watch by opening the console while you have the break point open.</p>
 <div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">this</span><span class="p">.</span><span class="nx">watch</span><span class="p">(</span><span class="err">‘</span><span class="nx">isAborted</span><span class="err">’</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
   <span class="c1">// trigger debugger</span>
   <span class="k">debugger</span><span class="p">;</span>
 <span class="p">});</span>
 </code></pre></div></div>
+<blockquote>
+  <p>Listings 2: This is how you use watch to track the ‘isAborted’ property on the Transition Object.</p>
+</blockquote>
 
 <p>It will hit the debugger when the value changes from true to false, then, see the stack trace and debug. Then I found that the Transition was aborted because of a refresh that was triggered in a route that was not active.
 The reason for it was that the <code class="language-plaintext highlighter-rouge">QueryParameters</code> were changing, and the transitioning was taking place at the same time. Normally that is not a problem, but due to some old lingering code in one of the routes, this caused the problem.</p>
